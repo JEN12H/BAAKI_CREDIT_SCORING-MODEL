@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models and Data (Large Files)
+models/*.pkl
+data/*.csv
+*.log
+*.png
+test_predictions.csv
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Environment
+.env
+venv/
+env/

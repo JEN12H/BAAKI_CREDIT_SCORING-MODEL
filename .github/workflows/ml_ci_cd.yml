@@ -1,0 +1,57 @@
+name: ML CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Ensure data and models directories exist
+        mkdir -p data
+        mkdir -p models
+
+    - name: Generate Synthetic Data
+      run: |
+        echo "Generating customer data..."
+        python src/data_generation/generate_data.py
+        
+        echo "Generating transactional data..."
+        python src/data_generation/monthly_data.py
+        
+        echo "Creating model snapshots..."
+        python src/data_generation/snap.py
+
+    - name: Train Models (Smoke Test)
+      run: |
+        # Run the cold start training script as it trains both models and comparisons
+        python src/train_cold_start_model.py
+
+    - name: Run Model Evaluation
+      run: |
+        python src/test_model.py
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-artifacts
+        path: |
+          models/*.pkl
+          *.png
+          test_predictions.csv
+          cold_start_training.log
