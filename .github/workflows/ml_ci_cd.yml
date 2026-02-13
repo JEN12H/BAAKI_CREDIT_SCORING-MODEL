@@ -26,20 +26,20 @@ jobs:
         mkdir -p data
         mkdir -p models
 
-    - name: Generate Synthetic Data
+    - name: Run Data Pipeline
       run: |
-        echo "Generating customer data..."
+        echo "Phase 1: Generating Raw Data (Synthetic)..."
         python src/data_generation/generate_data.py
-        
-        echo "Generating transactional data..."
         python src/data_generation/monthly_data.py
         
-        echo "Creating model snapshots..."
-        python src/data_generation/snap.py
+        echo "Phase 2: Running Engineering Pipeline (Snapshots)..."
+        # Using the new pipeline orchestrator
+        python src/pipeline.py
 
-    - name: Train Models (Smoke Test)
+    - name: Train & Validate Models
       run: |
-        # Run the cold start training script as it trains both models and comparisons
+        echo "Note: Training scripts now automatically recalibrate features from latest raw data."
+        # Run cold start training (handles both demographic and behavioral model comparisons)
         python src/train_cold_start_model.py
 
     - name: Run Model Evaluation

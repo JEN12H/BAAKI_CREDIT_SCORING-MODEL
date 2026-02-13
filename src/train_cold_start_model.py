@@ -30,6 +30,11 @@ import mlflow.sklearn
 import yaml
 from datetime import datetime
 import os
+import sys
+
+# Ensure project root is in path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.data_generation.snap import run_snap_pipeline
 
 # Configure warnings
 warnings.filterwarnings('ignore')
@@ -79,6 +84,14 @@ params = load_params()
 # LOAD DATA
 # =============================
 logger.info("[1/7] Loading data...")
+
+# --- AUTOMATIC DATA RECALIBRATION ---
+logger.info("Recalibrating features from raw data...")
+success = run_snap_pipeline()
+if not success:
+    logger.warning("Pipeline failed, using existing data/model_snapshots.csv")
+# ------------------------------------
+
 df = pd.read_csv("data/model_snapshots.csv")
 df = df.drop('customer_id', axis=1)
 
